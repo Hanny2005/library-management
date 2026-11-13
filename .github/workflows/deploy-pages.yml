@@ -1,0 +1,73 @@
+# Tự build frontend (library-frontend) và đăng lên GitHub Pages mỗi khi push lên nhánh main.
+# Cấu hình Supabase lấy từ: Settings → Secrets and variables → Actions → tab "Variables".
+name: Deploy frontend to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'library-frontend/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: library-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: library-frontend/package-lock.json
+
+      - name: Cài thư viện
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          # Chưa có backend chạy trên mạng → dùng dữ liệu mẫu cho sách/phiếu mượn
+          VITE_USE_MOCK: 'true'
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SHOW_DEMO_ACCOUNTS: ${{ vars.VITE_SHOW_DEMO_ACCOUNTS || 'true' }}
+          VITE_DEMO_ADMIN_EMAIL: ${{ vars.VITE_DEMO_ADMIN_EMAIL || 'admin@thuvien.test' }}
+          VITE_DEMO_ADMIN_PASSWORD: ${{ vars.VITE_DEMO_ADMIN_PASSWORD || 'Admin@2026' }}
+          VITE_DEMO_USER_EMAIL: ${{ vars.VITE_DEMO_USER_EMAIL || 'docgia@thuvien.test' }}
+          VITE_DEMO_USER_PASSWORD: ${{ vars.VITE_DEMO_USER_PASSWORD || 'Docgia@2026' }}
+
+      # GitHub Pages không biết route của React → trả 404.html cho mọi đường dẫn lạ,
+      # nên chép index.html thành 404.html để F5 ở /books, /admin… vẫn mở được.
+      - name: Hỗ trợ F5 trên mọi trang
+        run: cp dist/index.html dist/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: library-frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

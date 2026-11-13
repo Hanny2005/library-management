@@ -12,7 +12,8 @@ createRoot(document.getElementById('root')).render(
     {/* reducedMotion="user": tôn trọng cài đặt "giảm chuyển động" của hệ điều hành —
         bỏ trượt/scale, chỉ giữ fade */}
     <MotionConfig reducedMotion="user">
-      <BrowserRouter>
+      {/* basename = đường dẫn gốc ("/" trên máy, "/library-management" trên GitHub Pages) */}
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
         <AuthProvider>
           <ToastProvider>
             <App />

@@ -176,6 +176,21 @@ npm run build      # build production vào dist/
 | `true` | Sách, phiếu mượn, thống kê lấy từ dữ liệu mẫu trong trình duyệt (F5 là mất). Đăng nhập vẫn qua Supabase nếu đã cấu hình. Đầu trang có dải xanh "Chế độ xem trước". |
 | `false` | Mọi dữ liệu đi qua backend Spring Boot và lưu thật vào Supabase. |
 
+### 4. Đưa web lên GitHub Pages
+
+Web demo: **https://hanny2005.github.io/library-management/**
+
+File `.github/workflows/deploy-pages.yml` tự build `library-frontend` và đăng lên GitHub Pages mỗi khi push lên `main`.
+
+1. Repo → **Settings → Pages → Source: GitHub Actions**.
+2. Repo → **Settings → Secrets and variables → Actions → tab Variables → New repository variable**, tạo:
+   - `VITE_SUPABASE_URL` = Project URL của Supabase
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` = publishable key (key công khai, **không** dùng secret key)
+3. Push code (hoặc vào tab **Actions → Deploy frontend to GitHub Pages → Run workflow**).
+4. Supabase → **Authentication → URL Configuration**: thêm `https://hanny2005.github.io/library-management/` vào **Redirect URLs**.
+
+> Bản trên GitHub Pages chạy với `VITE_USE_MOCK=true` (chưa có backend trên mạng): đăng nhập là thật (Supabase), còn sách và phiếu mượn là dữ liệu mẫu.
+
 ---
 
 ## Tài khoản mẫu
