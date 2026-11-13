@@ -6,3 +6,4 @@ dist/
 *.zip
 *.log
 .DS_Store
+day-len-github.bat
